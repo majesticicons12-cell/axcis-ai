@@ -1,0 +1,42 @@
+{
+  "name": "axcis-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "bot": "node bot/index.js",
+    "dev:all": "concurrently \"npm run dev\" \"npm run bot\"",
+    "setup": "node scripts/setup.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@huggingface/transformers": "^4.2.0",
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "concurrently": "^9.2.1",
+    "dotenv": "^17.4.2",
+    "groq-sdk": "^1.1.2",
+    "nanoid": "^5.0.9",
+    "next": "^15.1.0",
+    "node-telegram-bot-api": "^0.67.0",
+    "nodemailer": "^6.9.16",
+    "open": "^10.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^9.0.3",
+    "remark-gfm": "^4.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.10.0",
+    "@types/node-telegram-bot-api": "^0.64.14",
+    "@types/nodemailer": "^6.4.17",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}
