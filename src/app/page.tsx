@@ -11,7 +11,7 @@ export default function Home() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const { messages, setMessages, sendMessage, isStreaming, activeAgent, currentToolCall, lastConversationId, error } = useChat();
+  const { messages, setMessages, sendMessage, stopStreaming, isStreaming, activeAgent, currentToolCall, lastConversationId, error } = useChat();
   const { conversations, fetchConversations, loadMessages, deleteConversation } = useConversations();
 
   // Sync conversation ID from chat responses
@@ -27,15 +27,17 @@ export default function Home() {
   }, [sendMessage, activeConversationId]);
 
   const handleNewChat = useCallback(() => {
+    stopStreaming();
     setActiveConversationId(null);
     setMessages([]);
-  }, [setMessages]);
+  }, [stopStreaming, setMessages]);
 
   const handleSelectConversation = useCallback(async (id: string) => {
+    stopStreaming();
     setActiveConversationId(id);
     const msgs = await loadMessages(id);
     setMessages(msgs);
-  }, [loadMessages, setMessages]);
+  }, [stopStreaming, loadMessages, setMessages]);
 
   const handleDeleteConversation = useCallback(async (id: string) => {
     const deleted = await deleteConversation(id);
@@ -48,7 +50,6 @@ export default function Home() {
     handleSend(text);
   }, [handleSend]);
 
-  // Main app
   return (
     <div className="h-screen flex overflow-hidden">
       {/* Mobile sidebar toggle */}
@@ -135,7 +136,9 @@ export default function Home() {
         {/* Input */}
         <ChatInput
           onSend={handleSend}
-          disabled={isStreaming}
+          onStop={stopStreaming}
+          disabled={false}
+          isStreaming={isStreaming}
           placeholder="Ask AXCIS anything..."
         />
       </main>

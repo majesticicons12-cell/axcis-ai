@@ -13,6 +13,7 @@ interface UseChatReturn {
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   sendMessage: (text: string, conversationId?: string) => Promise<void>;
+  stopStreaming: () => void;
   isStreaming: boolean;
   activeAgent: { id: string; name: string } | null;
   currentToolCall: { name: string } | null;
@@ -29,12 +30,21 @@ export function useChat(): UseChatReturn {
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  const stopStreaming = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    setIsStreaming(false);
+    setCurrentToolCall(null);
+    setActiveAgent(null);
+  }, []);
+
   const sendMessage = useCallback(async (text: string, conversationId?: string) => {
     setError(null);
     setIsStreaming(true);
     setCurrentToolCall(null);
 
-    // Add user message optimistically
     const userMsg: Message = {
       id: `temp_${Date.now()}`,
       conversationId: conversationId || '',
@@ -46,7 +56,6 @@ export function useChat(): UseChatReturn {
     };
     setMessages(prev => [...prev, userMsg]);
 
-    // Add empty assistant message for streaming
     const assistantMsgId = `temp_asst_${Date.now()}`;
     const assistantMsg: Message = {
       id: assistantMsgId,
@@ -61,7 +70,6 @@ export function useChat(): UseChatReturn {
 
     abortRef.current = new AbortController();
 
-    // Get recent history from localStorage
     let historyForServer: { role: string; content: string }[] = [];
     if (conversationId) {
       const storedMsgs = getStoredMessages(conversationId);
@@ -152,7 +160,6 @@ export function useChat(): UseChatReturn {
                     setLastConversationId(data.conversationId);
                   }
 
-                  // Save user message to localStorage
                   const savedUserMsg: Message = {
                     ...userMsg,
                     id: data.messageId ? `user_${data.messageId}` : userMsg.id,
@@ -160,7 +167,6 @@ export function useChat(): UseChatReturn {
                   };
                   saveMessage(savedUserMsg);
 
-                  // Save assistant message to localStorage
                   const savedAssistantMsg: Message = {
                     id: data.messageId || assistantMsgId,
                     conversationId: finalConversationId,
@@ -172,12 +178,10 @@ export function useChat(): UseChatReturn {
                   };
                   saveMessage(savedAssistantMsg);
 
-                  // Update conversation timestamp
                   updateStoredConversation(finalConversationId, {
                     updatedAt: new Date().toISOString(),
                   });
 
-                  // Update message IDs in state
                   setMessages(prev => prev.map(m => {
                     if (m.id === userMsg.id) return savedUserMsg;
                     if (m.id === assistantMsgId) return { ...m, id: savedAssistantMsg.id, conversationId: finalConversationId };
@@ -198,7 +202,10 @@ export function useChat(): UseChatReturn {
         }
       }
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') return;
+      if (err instanceof Error && err.name === 'AbortError') {
+        setMessages(prev => prev.filter(m => m.id !== assistantMsgId || m.content));
+        return;
+      }
       const message = err instanceof Error ? err.message : 'An unexpected error occurred';
       setError(message);
       setMessages(prev => prev.filter(m => m.id !== assistantMsgId || m.content));
@@ -210,5 +217,5 @@ export function useChat(): UseChatReturn {
     }
   }, []);
 
-  return { messages, setMessages, sendMessage, isStreaming, activeAgent, currentToolCall, lastConversationId, error };
+  return { messages, setMessages, sendMessage, stopStreaming, isStreaming, activeAgent, currentToolCall, lastConversationId, error };
 }

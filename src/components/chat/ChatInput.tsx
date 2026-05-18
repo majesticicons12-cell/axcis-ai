@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
+  onStop: () => void;
+  isStreaming: boolean;
   disabled: boolean;
   placeholder?: string;
 }
@@ -28,7 +30,7 @@ const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_AUDIO_SIZE = 25 * 1024 * 1024;
 const MAX_TEXT_SIZE = 500 * 1024;
 
-export default function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
+export default function ChatInput({ onSend, onStop, isStreaming, disabled, placeholder }: ChatInputProps) {
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -209,7 +211,7 @@ export default function ChatInput({ onSend, disabled, placeholder }: ChatInputPr
 
   const handleSend = useCallback(async () => {
     const trimmed = text.trim();
-    if ((!trimmed && attachments.length === 0) || disabled) return;
+    if ((!trimmed && attachments.length === 0) || disabled || isStreaming) return;
 
     let finalMessage = '';
 
@@ -347,31 +349,47 @@ export default function ChatInput({ onSend, disabled, placeholder }: ChatInputPr
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             onInput={handleInput}
-            placeholder={placeholder || 'Ask AXCIS anything...'}
-            disabled={disabled}
+            placeholder={isStreaming ? 'Waiting for response...' : placeholder || 'Ask AXCIS anything...'}
+            disabled={isStreaming || disabled}
             rows={1}
             className="flex-1 bg-transparent text-text-primary text-sm placeholder-text-tertiary resize-none outline-none max-h-[200px] leading-relaxed"
           />
 
-          <button
-            onClick={handleSend}
-            disabled={!hasContent || disabled || isProcessing}
-            className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-              hasContent && !disabled && !isProcessing
-                ? 'bg-accent text-bg-primary hover:bg-accent-bright glow-accent-sm'
-                : 'bg-bg-hover text-text-tertiary cursor-not-allowed'
-            }`}
-          >
-            {isProcessing ? (
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" strokeDasharray="28" strokeDashoffset="8" />
+          {/* Stop button (shown while streaming) */}
+          {isStreaming && (
+            <button
+              onClick={onStop}
+              className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center bg-danger/20 text-danger hover:bg-danger/30 transition-all cursor-pointer border border-danger/30"
+              title="Stop generating"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <rect x="3" y="3" width="10" height="10" rx="2" fill="currentColor" />
               </svg>
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8H13M9 4L13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            )}
-          </button>
+            </button>
+          )}
+
+          {/* Send button (hidden while streaming) */}
+          {!isStreaming && (
+            <button
+              onClick={handleSend}
+              disabled={!hasContent || disabled || isProcessing}
+              className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                hasContent && !disabled && !isProcessing
+                  ? 'bg-accent text-bg-primary hover:bg-accent-bright glow-accent-sm'
+                  : 'bg-bg-hover text-text-tertiary cursor-not-allowed'
+              }`}
+            >
+              {isProcessing ? (
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" strokeDasharray="28" strokeDashoffset="8" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8H13M9 4L13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Helper text */}
