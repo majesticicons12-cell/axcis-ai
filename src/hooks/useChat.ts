@@ -8,7 +8,6 @@ import {
   getStoredMessages,
   updateStoredConversation,
 } from '@/lib/storage';
-import { offlineAI } from '@/lib/offline-ai';
 
 interface UseChatReturn {
   messages: Message[];
@@ -30,109 +29,11 @@ export function useChat(): UseChatReturn {
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const sendMessageOffline = useCallback(async (text: string, conversationId?: string) => {
-    const convId = conversationId || `offline_${Date.now()}`;
+  const sendMessage = useCallback(async (text: string, conversationId?: string) => {
+    setError(null);
+    setIsStreaming(true);
+    setCurrentToolCall(null);
 
-    // Create conversation if new
-    if (!conversationId) {
-      const conv: Conversation = {
-        id: convId,
-        title: text.slice(0, 50),
-        agentId: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      saveConversation(conv);
-      setLastConversationId(convId);
-    }
-
-    // Add user message
-    const userMsg: Message = {
-      id: `user_${Date.now()}`,
-      conversationId: convId,
-      role: 'user',
-      content: text,
-      agentId: null,
-      metadata: null,
-      createdAt: new Date().toISOString(),
-    };
-    setMessages(prev => [...prev, userMsg]);
-    saveMessage(userMsg);
-
-    // Add empty assistant message
-    const assistantMsgId = `asst_${Date.now()}`;
-    const assistantMsg: Message = {
-      id: assistantMsgId,
-      conversationId: convId,
-      role: 'assistant',
-      content: '',
-      agentId: null,
-      metadata: null,
-      createdAt: new Date().toISOString(),
-    };
-    setMessages(prev => [...prev, assistantMsg]);
-    setActiveAgent({ id: 'axcis', name: 'AXCIS (Offline)' });
-
-    // Auto-load cached model if not ready yet
-    if (!offlineAI.isReady) {
-      if (offlineAI.isModelCached()) {
-        // Model was downloaded before - load it from browser cache
-        try {
-          setMessages(prev => prev.map(m =>
-            m.id === assistantMsgId ? { ...m, content: 'Loading offline AI model...' } : m
-          ));
-          const activeId = offlineAI.getActiveModelId();
-          await offlineAI.initialize(activeId || undefined);
-        } catch {
-          const errorMsg = 'Failed to load offline AI model. Try re-downloading it when you have internet.';
-          setMessages(prev => prev.map(m =>
-            m.id === assistantMsgId ? { ...m, content: errorMsg } : m
-          ));
-          const savedMsg: Message = { ...assistantMsg, content: errorMsg };
-          saveMessage(savedMsg);
-          updateStoredConversation(convId, { updatedAt: new Date().toISOString() });
-          return;
-        }
-      } else {
-        // No model downloaded at all
-        const offlineResponse = "No offline AI model downloaded yet. Connect to the internet and download a model from the sidebar (Offline AI Models section) to use AI without internet.";
-        setMessages(prev => prev.map(m =>
-          m.id === assistantMsgId ? { ...m, content: offlineResponse } : m
-        ));
-        const savedMsg: Message = { ...assistantMsg, content: offlineResponse };
-        saveMessage(savedMsg);
-        updateStoredConversation(convId, { updatedAt: new Date().toISOString() });
-        return;
-      }
-    }
-
-    // Use offline AI model
-    try {
-      const history = messages.slice(-10).map(m => ({
-        role: m.role,
-        content: m.content,
-      }));
-
-      let fullResponse = '';
-      await offlineAI.generate(text, history, (token) => {
-        fullResponse += token;
-        setMessages(prev => prev.map(m =>
-          m.id === assistantMsgId ? { ...m, content: fullResponse } : m
-        ));
-      });
-
-      const savedMsg: Message = { ...assistantMsg, content: fullResponse };
-      saveMessage(savedMsg);
-      updateStoredConversation(convId, { updatedAt: new Date().toISOString() });
-    } catch (err) {
-      const errMsg = err instanceof Error ? err.message : 'Offline AI error';
-      setMessages(prev => prev.map(m =>
-        m.id === assistantMsgId ? { ...m, content: `Error: ${errMsg}` } : m
-      ));
-    }
-  }, [messages]);
-
-  const sendMessageOnline = useCallback(async (text: string, conversationId?: string) => {
     // Add user message optimistically
     const userMsg: Message = {
       id: `temp_${Date.now()}`,
@@ -301,29 +202,13 @@ export function useChat(): UseChatReturn {
       const message = err instanceof Error ? err.message : 'An unexpected error occurred';
       setError(message);
       setMessages(prev => prev.filter(m => m.id !== assistantMsgId || m.content));
-    }
-  }, []);
-
-  const sendMessage = useCallback(async (text: string, conversationId?: string) => {
-    setError(null);
-    setIsStreaming(true);
-    setCurrentToolCall(null);
-
-    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
-
-    try {
-      if (isOnline) {
-        await sendMessageOnline(text, conversationId);
-      } else {
-        await sendMessageOffline(text, conversationId);
-      }
     } finally {
       setIsStreaming(false);
       setCurrentToolCall(null);
       setActiveAgent(null);
       abortRef.current = null;
     }
-  }, [sendMessageOnline, sendMessageOffline]);
+  }, []);
 
   return { messages, setMessages, sendMessage, isStreaming, activeAgent, currentToolCall, lastConversationId, error };
 }

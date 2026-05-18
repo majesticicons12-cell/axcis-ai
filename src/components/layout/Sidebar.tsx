@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import type { Conversation } from '@/types';
 import ConversationList from './ConversationList';
 import ThemeSelector from '@/components/ThemeSelector';
-import ModelSelector from '@/components/ModelSelector';
 import { getStoredTheme, applyTheme } from '@/lib/themes';
 
 interface SidebarProps {
@@ -13,7 +12,6 @@ interface SidebarProps {
   onSelectConversation: (id: string) => void;
   onNewChat: () => void;
   onDeleteConversation: (id: string) => void;
-  isOnline: boolean;
 }
 
 export default function Sidebar({
@@ -22,7 +20,6 @@ export default function Sidebar({
   onSelectConversation,
   onNewChat,
   onDeleteConversation,
-  isOnline,
 }: SidebarProps) {
   const [currentTheme, setCurrentTheme] = useState('black');
 
@@ -43,13 +40,9 @@ export default function Sidebar({
           <div>
             <h1 className="text-sm font-bold text-text-primary tracking-wide">AXCIS AI</h1>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
-                isOnline
-                  ? 'bg-success/10 text-success border border-success/20'
-                  : 'bg-warning/10 text-warning border border-warning/20'
-              }`}>
-                <span className={`w-1 h-1 rounded-full ${isOnline ? 'bg-success' : 'bg-warning'}`} />
-                {isOnline ? 'Online' : 'Offline'}
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-success/10 text-success border border-success/20">
+                <span className="w-1 h-1 rounded-full bg-success" />
+                Online
               </span>
             </div>
           </div>
@@ -83,20 +76,17 @@ export default function Sidebar({
         />
       </div>
 
-      {/* Bottom section - Models + Theme + Status */}
+      {/* Bottom section - Theme + Status */}
       <div className="border-t border-border-default p-3 space-y-2">
-        {/* Model selector with download progress */}
-        <ModelSelector isOnline={isOnline} />
-
         {/* Theme selector */}
         <ThemeSelector currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
 
         {/* Status bar */}
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-success' : 'bg-warning'} animate-pulse-glow`} />
+            <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-glow" />
             <span className="text-[11px] text-text-tertiary font-medium">
-              {isOnline ? 'Connected' : 'Offline Mode'}
+              Connected
             </span>
           </div>
         </div>

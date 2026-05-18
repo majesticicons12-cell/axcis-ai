@@ -3,16 +3,10 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'AXCIS AI - Your Personal AI Assistant',
-  description: 'A powerful AI assistant that works online and offline. Search the web, get answers to anything.',
-  manifest: '/manifest.json',
+  description: 'A powerful online AI assistant. Search the web, analyze images, transcribe audio, and get answers to anything.',
   icons: {
     icon: '/images/axcis-core.png',
     apple: '/images/axcis-core.png',
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'AXCIS AI',
   },
 };
 
@@ -40,17 +34,6 @@ export default function RootLayout({
       </head>
       <body>
         {children}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js').catch(() => {});
-                });
-              }
-            `,
-          }}
-        />
       </body>
     </html>
   );

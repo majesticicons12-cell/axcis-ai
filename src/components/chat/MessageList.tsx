@@ -11,7 +11,6 @@ interface MessageListProps {
   activeAgent: { id: string; name: string } | null;
   currentToolCall: { name: string } | null;
   onSuggestionClick?: (text: string) => void;
-  isOnline: boolean;
 }
 
 const SUGGESTIONS = [
@@ -21,7 +20,7 @@ const SUGGESTIONS = [
   { text: 'Find remote developer jobs', icon: 'search' },
 ];
 
-export default function MessageList({ messages, isStreaming, activeAgent, currentToolCall, onSuggestionClick, isOnline }: MessageListProps) {
+export default function MessageList({ messages, isStreaming, activeAgent, currentToolCall, onSuggestionClick }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,7 +49,7 @@ export default function MessageList({ messages, isStreaming, activeAgent, curren
             Your personal AI assistant. Ask me anything.
           </p>
           <p className="text-text-tertiary text-xs mb-8">
-            {isOnline ? 'Online - Web search available' : 'Offline - Using local AI'}
+            Online - Web search available
           </p>
 
           {/* Suggestion chips */}

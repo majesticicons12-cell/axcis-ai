@@ -10,26 +10,9 @@ import { useConversations } from '@/hooks/useConversations';
 export default function Home() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isOnline, setIsOnline] = useState(true);
 
   const { messages, setMessages, sendMessage, isStreaming, activeAgent, currentToolCall, lastConversationId, error } = useChat();
   const { conversations, fetchConversations, loadMessages, deleteConversation } = useConversations();
-
-  // Network status detection
-  useEffect(() => {
-    setIsOnline(navigator.onLine);
-
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
 
   // Sync conversation ID from chat responses
   useEffect(() => {
@@ -86,7 +69,6 @@ export default function Home() {
           onSelectConversation={handleSelectConversation}
           onNewChat={handleNewChat}
           onDeleteConversation={handleDeleteConversation}
-          isOnline={isOnline}
         />
       </div>
 
@@ -121,15 +103,11 @@ export default function Home() {
               )}
             </div>
           </div>
-          {/* Online/Offline indicator in header */}
+          {/* Online indicator */}
           <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-lg ${
-              isOnline
-                ? 'bg-success/10 text-success'
-                : 'bg-warning/10 text-warning'
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-success' : 'bg-warning'}`} />
-              {isOnline ? 'Online' : 'Offline'}
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-lg bg-success/10 text-success">
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+              Online
             </span>
           </div>
         </header>
@@ -152,14 +130,13 @@ export default function Home() {
           activeAgent={activeAgent}
           currentToolCall={currentToolCall}
           onSuggestionClick={handleSuggestionClick}
-          isOnline={isOnline}
         />
 
         {/* Input */}
         <ChatInput
           onSend={handleSend}
           disabled={isStreaming}
-          placeholder={isOnline ? "Ask AXCIS anything..." : "Ask AXCIS (offline mode)..."}
+          placeholder="Ask AXCIS anything..."
         />
       </main>
     </div>
