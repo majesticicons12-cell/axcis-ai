@@ -22,12 +22,41 @@ export default function Sidebar({
   onDeleteConversation,
 }: SidebarProps) {
   const [currentTheme, setCurrentTheme] = useState('black');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const stored = getStoredTheme();
     setCurrentTheme(stored);
     applyTheme(stored);
   }, []);
+
+  const filtered = searchQuery.trim()
+    ? conversations.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    : conversations;
+
+  const handlePin = (id: string) => {
+    const conv = conversations.find(c => c.id === id);
+    if (conv) {
+      import('@/lib/storage').then(({ updateStoredConversation, getStoredConversations, saveConversation }) => {
+        const updated = { ...conv, pinned: !conv.pinned };
+        updateStoredConversation(id, { pinned: updated.pinned });
+        // Re-save full conversation to keep localStorage in sync
+        const convs = getStoredConversations().map(c => c.id === id ? updated : c);
+        localStorage.setItem('axcis_conversations', JSON.stringify(convs));
+      });
+    }
+  };
+
+  const handleRename = (id: string, title: string) => {
+    const conv = conversations.find(c => c.id === id);
+    if (conv) {
+      import('@/lib/storage').then(({ updateStoredConversation, getStoredConversations }) => {
+        updateStoredConversation(id, { title });
+        const convs = getStoredConversations().map(c => c.id === id ? { ...c, title } : c);
+        localStorage.setItem('axcis_conversations', JSON.stringify(convs));
+      });
+    }
+  };
 
   return (
     <aside className="w-[300px] h-screen flex flex-col border-r border-border-default bg-bg-secondary shrink-0">
@@ -62,17 +91,51 @@ export default function Sidebar({
         </button>
       </div>
 
+      {/* Search */}
+      <div className="px-3 pt-3">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-tertiary border border-border-default focus-within:border-accent/30 transition-all">
+          <svg className="w-3.5 h-3.5 text-text-tertiary shrink-0" viewBox="0 0 16 16" fill="none">
+            <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.2" />
+            <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+          </svg>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search conversations..."
+            className="flex-1 bg-transparent text-xs text-text-primary placeholder-text-tertiary outline-none"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
+        </div>
+        {searchQuery && filtered.length === 0 && (
+          <p className="text-[11px] text-text-tertiary mt-2 px-1">No conversations match "{searchQuery}"</p>
+        )}
+      </div>
+
       {/* Conversations */}
       <div className="px-3 pt-3">
-        <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider px-1">History</span>
+        <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider px-1">
+          {searchQuery ? `Results (${filtered.length})` : 'History'}
+        </span>
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 pt-2 pb-3">
         <ConversationList
-          conversations={conversations}
+          conversations={filtered}
           activeId={activeConversationId}
           onSelect={onSelectConversation}
           onDelete={onDeleteConversation}
+          onPin={handlePin}
+          onRename={handleRename}
         />
       </div>
 

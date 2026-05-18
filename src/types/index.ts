@@ -4,6 +4,7 @@ export interface Conversation {
   agentId: string | null;
   createdAt: string;
   updatedAt: string;
+  pinned?: boolean;
 }
 
 export interface Message {
