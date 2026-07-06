@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { getHfHeaders } from '@/lib/hf';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,33 +12,47 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Image data is required' }, { status: 400 });
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey || apiKey === 'your-anthropic-api-key-here') {
-      return Response.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 400 });
-    }
+    const headers = getHfHeaders();
+    const model = 'Salesforce/blip-image-captioning-base';
+    const textPrompt = prompt || 'Describe this image in detail. What do you see?';
 
-    const { Anthropic } = await import('@anthropic-ai/sdk');
-    const client = new Anthropic({ apiKey });
-
-    const mimeType = (media_type || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
-
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'text', text: prompt || 'Describe this image in detail. What do you see?' },
-          { type: 'image', source: { type: 'base64', media_type: mimeType, data: image } },
-        ],
-      }],
+    // BLIP takes image + optional text
+    const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        inputs: { image: `data:${media_type || 'image/jpeg'};base64,${image}`, text: textPrompt },
+      }),
+      signal: AbortSignal.timeout(30000),
     });
 
-    const text = response.content[0]?.type === 'text' ? response.content[0].text : '';
-    return Response.json({ description: text });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => 'Unknown error');
+      // Fallback: try a simpler captioning model
+      const fallbackRes = await fetch('https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ inputs: `data:${media_type || 'image/jpeg'};base64,${image}` }),
+        signal: AbortSignal.timeout(30000),
+      });
+      if (!fallbackRes.ok) {
+        return Response.json({ error: `Image analysis failed: ${errText}` }, { status: 500 });
+      }
+      const fbData = await fallbackRes.json();
+      const fbText = Array.isArray(fbData) ? fbData[0]?.generated_text || fbData[0] || '' : '';
+      return Response.json({ description: fbText, model: 'nlpconnect/vit-gpt2-image-captioning' });
+    }
+
+    const data = await res.json();
+    const description = Array.isArray(data)
+      ? (data[0]?.generated_text || JSON.stringify(data[0]) || '')
+      : (data.generated_text || '');
+
+    return Response.json({ description, model });
   } catch (err) {
-    return Response.json({
-      error: err instanceof Error ? err.message : 'Vision analysis failed',
-    }, { status: 500 });
+    return Response.json(
+      { error: err instanceof Error ? err.message : 'Internal error' },
+      { status: 500 }
+    );
   }
 }

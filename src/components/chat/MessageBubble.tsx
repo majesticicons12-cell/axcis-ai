@@ -52,7 +52,7 @@ export default function MessageBubble({ message, isStreaming, agentName, current
   const previewUrl = metadata?.previewUrl as string | undefined;
 
   return (
-    <div className={`flex gap-3 animate-slide-up ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {/* Agent avatar */}
       {!isUser && (
         <div className="shrink-0 mt-1">
@@ -84,12 +84,12 @@ export default function MessageBubble({ message, isStreaming, agentName, current
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
               ) : isStreaming ? (
                 <div className="flex items-center gap-2.5 text-text-tertiary py-0.5">
-                  <div className="flex gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse-glow" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse-glow" style={{ animationDelay: '200ms' }} />
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse-glow" style={{ animationDelay: '400ms' }} />
+                  <div className="flex gap-1.5">
+                    <span className="loading-dot" />
+                    <span className="loading-dot" />
+                    <span className="loading-dot" />
                   </div>
-                  <span className="text-xs">Thinking...</span>
+                  <span className="text-xs text-accent font-medium">Thinking</span>
                 </div>
               ) : null}
             </div>
@@ -98,9 +98,9 @@ export default function MessageBubble({ message, isStreaming, agentName, current
 
         {/* Tool call indicator */}
         {currentToolCall && (
-          <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-accent/5 border border-accent/10 animate-fade-in">
-            <svg className="w-3.5 h-3.5 text-accent animate-spin" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" strokeDasharray="28" strokeDashoffset="8" />
+          <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-xl bg-accent/5 border border-accent/15 breathing-glow">
+            <svg className="w-3.5 h-3.5 text-accent" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" />
             </svg>
             <span className="text-xs text-accent font-medium">
               {TOOL_LABELS[currentToolCall.name] || `Running ${currentToolCall.name}...`}
@@ -110,7 +110,7 @@ export default function MessageBubble({ message, isStreaming, agentName, current
 
         {/* Website preview */}
         {projectId && previewUrl && (
-          <div className="mt-3 rounded-xl overflow-hidden border border-border-default animate-fade-in">
+          <div className="mt-3 rounded-xl overflow-hidden border border-border-default">
             <div className="flex items-center justify-between px-3 py-2 bg-bg-surface border-b border-border-default">
               <div className="flex items-center gap-2">
                 <div className="flex gap-1">
@@ -124,7 +124,7 @@ export default function MessageBubble({ message, isStreaming, agentName, current
                 href={previewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-2 py-0.5 text-[11px] text-accent bg-accent/8 rounded-md hover:bg-accent/15 transition-colors font-medium"
+                className="px-2 py-0.5 text-[11px] text-accent bg-accent/8 rounded-md hover:bg-accent/15 font-medium"
               >
                 Open
               </a>

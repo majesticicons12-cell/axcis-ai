@@ -78,6 +78,6 @@ Rules:
       },
     },
   ],
-  model: 'claude-sonnet-4-20250514',
+  model: 'google/gemma-4-12B-it',
   maxTokens: 4096,
 };

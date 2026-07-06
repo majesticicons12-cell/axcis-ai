@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import ReactGrabWrapper from '@/components/ReactGrab';
+import AuthProvider from '@/components/AuthProvider';
 
 export const metadata: Metadata = {
-  title: 'AXCIS AI - Your Personal AI Assistant',
-  description: 'A powerful online AI assistant. Search the web, analyze images, transcribe audio, and get answers to anything.',
+  title: 'AXCIS — AI Co-Founder',
+  description: 'Your AI Co-Founder. Research markets, validate ideas, build strategy.',
   icons: {
     icon: '/images/axcis-core.png',
     apple: '/images/axcis-core.png',
@@ -11,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#000000',
+  themeColor: '#0a0a0a',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -28,12 +30,15 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body>
-        {children}
+        <AuthProvider>
+          {children}
+          <ReactGrabWrapper />
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
 export interface SearchResult {
   title: string;
@@ -7,133 +6,72 @@ export interface SearchResult {
   snippet: string;
 }
 
-function extractUrl(redirectUrl: string): string {
-  if (redirectUrl.includes('uddg=')) {
-    try {
-      const urlParams = new URLSearchParams(redirectUrl.split('?')[1]);
-      return urlParams.get('uddg') || redirectUrl;
-    } catch {
-      return redirectUrl;
-    }
-  }
-  return redirectUrl;
-}
+// ─── Google Custom Search API ───────────────────────────────────────────────
 
-function parseResults(html: string, limit: number): SearchResult[] {
-  const $ = cheerio.load(html);
-  const results: SearchResult[] = [];
+async function searchGoogle(query: string, limit: number): Promise<SearchResult[] | null> {
+  const apiKey = process.env.GOOGLE_API_KEY;
+  const cx = process.env.GOOGLE_CX;
+  if (!apiKey || !cx || apiKey.startsWith('your-')) return null;
 
-  $('.result').each((i, el) => {
-    if (i >= limit) return false;
-
-    const titleEl = $(el).find('.result__title a');
-    const snippetEl = $(el).find('.result__snippet');
-
-    const title = titleEl.text().trim();
-    const resultUrl = extractUrl(titleEl.attr('href') || '');
-    const snippet = snippetEl.text().trim();
-
-    if (title && resultUrl) {
-      results.push({ title, url: resultUrl, snippet });
-    }
-  });
-
-  return results;
-}
-
-function getNextPageUrl(html: string): string | null {
-  const $ = cheerio.load(html);
-  const nextLink = $('.result--more__btn a').attr('href');
-  if (nextLink && nextLink.includes('q=')) {
-    // It might be a relative path — ensure full URL
-    if (nextLink.startsWith('/')) {
-      return `https://html.duckduckgo.com${nextLink}`;
-    }
-    return nextLink;
-  }
-  return null;
-}
-
-async function fetchPage(url: string): Promise<string | null> {
   try {
-    const response = await axios.get(url, {
+    const res = await axios.get('https://www.googleapis.com/customsearch/v1', {
+      params: { key: apiKey, cx, q: query, num: Math.min(limit, 10) },
       timeout: 10000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html',
-      },
     });
-    return response.data;
-  } catch {
-    return null;
-  }
+    return (res.data.items || []).map((item: { title: string; link: string; snippet: string }) => ({
+      title: item.title,
+      url: item.link,
+      snippet: item.snippet || '',
+    }));
+  } catch { return null; }
 }
+
+// ─── Brave Search API ──────────────────────────────────────────────────────
+
+async function searchBrave(query: string, limit: number): Promise<SearchResult[] | null> {
+  const apiKey = process.env.BRAVE_API_KEY;
+  if (!apiKey || apiKey.startsWith('your-')) return null;
+
+  try {
+    const res = await axios.get('https://api.search.brave.com/res/v1/web/search', {
+      params: { q: query, count: Math.min(limit, 20) },
+      headers: { 'Accept': 'application/json', 'Accept-Encoding': 'gzip', 'X-Subscription-Token': apiKey },
+      timeout: 10000,
+    });
+    return (res.data.web?.results || []).map((item: { title: string; url: string; description: string }) => ({
+      title: item.title,
+      url: item.url,
+      snippet: item.description || '',
+    }));
+  } catch { return null; }
+}
+
+// ─── Public API ─────────────────────────────────────────────────────────────
 
 export async function searchWeb(query: string): Promise<SearchResult[]> {
-  try {
-    const encodedQuery = encodeURIComponent(query);
-    const url = `https://html.duckduckgo.com/html/?q=${encodedQuery}`;
-    const html = await fetchPage(url);
-    if (!html) {
-      return [{ title: 'Search error', url: '', snippet: `Failed to search for: "${query}"` }];
-    }
+  const google = await searchGoogle(query, 10);
+  if (google) return google;
 
-    const results = parseResults(html, 10);
-    if (results.length === 0) {
-      return [{ title: 'No results found', url: '', snippet: `No search results found for: "${query}"` }];
-    }
+  const brave = await searchBrave(query, 10);
+  if (brave) return brave;
 
-    return results;
-  } catch (err) {
-    return [{
-      title: 'Search error',
-      url: '',
-      snippet: `Failed to search: ${err instanceof Error ? err.message : 'Unknown error'}`,
-    }];
-  }
+  return [{
+    title: 'Search not configured',
+    url: '',
+    snippet: 'No search API is configured. Set GOOGLE_API_KEY + GOOGLE_CX (Google CSE, free for 100 queries/day) or BRAVE_API_KEY (Brave Search, free 2000 queries/month) in your environment variables.',
+  }];
 }
 
-export async function searchWebExtensive(query: string, maxResults: number = 50): Promise<SearchResult[]> {
-  const allResults: SearchResult[] = [];
-  const seenUrls = new Set<string>();
+export async function searchWebExtensive(query: string, maxResults: number = 30): Promise<SearchResult[]> {
+  const google = await searchGoogle(query, Math.min(maxResults, 10));
+  if (google) return google;
 
-  try {
-    const encodedQuery = encodeURIComponent(query);
-    let currentUrl = `https://html.duckduckgo.com/html/?q=${encodedQuery}`;
+  const brave = await searchBrave(query, Math.min(maxResults, 20));
+  if (brave) return brave;
 
-    for (let page = 0; page < 5 && allResults.length < maxResults; page++) {
-      const html = await fetchPage(currentUrl);
-      if (!html) break;
-
-      const pageResults = parseResults(html, maxResults - allResults.length);
-
-      for (const r of pageResults) {
-        if (!seenUrls.has(r.url)) {
-          seenUrls.add(r.url);
-          allResults.push(r);
-        }
-      }
-
-      if (allResults.length >= maxResults) break;
-
-      const nextUrl = getNextPageUrl(html);
-      if (!nextUrl) break;
-      currentUrl = nextUrl;
-    }
-
-    if (allResults.length === 0) {
-      return [{ title: 'No results found', url: '', snippet: `No search results found for: "${query}"` }];
-    }
-
-    return allResults.slice(0, maxResults);
-  } catch (err) {
-    if (allResults.length === 0) {
-      return [{
-        title: 'Search error',
-        url: '',
-        snippet: `Failed to search: ${err instanceof Error ? err.message : 'Unknown error'}`,
-      }];
-    }
-    return allResults;
-  }
+  return [{
+    title: 'Search not configured',
+    url: '',
+    snippet: 'No search API is configured. Set GOOGLE_API_KEY + GOOGLE_CX (Google CSE, free 100 queries/day) or BRAVE_API_KEY (Brave Search, free 2000 queries/month) in your environment variables.',
+  }];
 }

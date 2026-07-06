@@ -11,7 +11,10 @@
     "setup": "node scripts/setup.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
+    "@clerk/nextjs": "^7.5.3",
+    "@react-grab/mcp": "^0.1.37",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.2",
     "axios": "^1.7.9",
     "cheerio": "^1.0.0",
     "concurrently": "^9.2.1",
@@ -21,9 +24,11 @@
     "next": "^15.1.0",
     "node-telegram-bot-api": "^0.67.0",
     "nodemailer": "^6.9.16",
+    "ogl": "^1.0.11",
     "open": "^10.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-grab": "^0.1.47",
     "react-markdown": "^9.0.3",
     "remark-gfm": "^4.0.0"
   },

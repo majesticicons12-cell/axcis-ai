@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import type { Conversation } from '@/types';
 import ConversationList from './ConversationList';
-import ThemeSelector from '@/components/ThemeSelector';
-import { getStoredTheme, applyTheme } from '@/lib/themes';
 
 interface SidebarProps {
   conversations: Conversation[];
@@ -21,14 +19,7 @@ export default function Sidebar({
   onNewChat,
   onDeleteConversation,
 }: SidebarProps) {
-  const [currentTheme, setCurrentTheme] = useState('black');
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    const stored = getStoredTheme();
-    setCurrentTheme(stored);
-    applyTheme(stored);
-  }, []);
 
   const filtered = searchQuery.trim()
     ? conversations.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -37,64 +28,38 @@ export default function Sidebar({
   const handlePin = (id: string) => {
     const conv = conversations.find(c => c.id === id);
     if (conv) {
-      import('@/lib/storage').then(({ updateStoredConversation, getStoredConversations, saveConversation }) => {
-        const updated = { ...conv, pinned: !conv.pinned };
-        updateStoredConversation(id, { pinned: updated.pinned });
-        // Re-save full conversation to keep localStorage in sync
-        const convs = getStoredConversations().map(c => c.id === id ? updated : c);
-        localStorage.setItem('axcis_conversations', JSON.stringify(convs));
+      import('@/lib/storage').then(({ updateStoredConversation, getStoredConversations }) => {
+        updateStoredConversation(id, { pinned: !conv.pinned });
+        const convs = getStoredConversations().map(c => c.id === id ? { ...c, pinned: !conv.pinned } : c);
+        const uid = localStorage.getItem('axcis_user_id') || '';
+        const key = uid ? `axcis_conv_${uid}` : 'axcis_conversations';
+        localStorage.setItem(key, JSON.stringify(convs));
       });
     }
   };
 
   const handleRename = (id: string, title: string) => {
-    const conv = conversations.find(c => c.id === id);
-    if (conv) {
-      import('@/lib/storage').then(({ updateStoredConversation, getStoredConversations }) => {
-        updateStoredConversation(id, { title });
-        const convs = getStoredConversations().map(c => c.id === id ? { ...c, title } : c);
-        localStorage.setItem('axcis_conversations', JSON.stringify(convs));
-      });
-    }
+    import('@/lib/storage').then(({ updateStoredConversation, getStoredConversations }) => {
+      updateStoredConversation(id, { title });
+      const convs = getStoredConversations().map(c => c.id === id ? { ...c, title } : c);
+      const uid = localStorage.getItem('axcis_user_id') || '';
+      const key = uid ? `axcis_conv_${uid}` : 'axcis_conversations';
+      localStorage.setItem(key, JSON.stringify(convs));
+    });
   };
 
   return (
-    <aside className="w-[300px] h-screen flex flex-col border-r border-border-default bg-bg-secondary shrink-0">
-      {/* Logo & Brand */}
-      <div className="px-5 py-4 border-b border-border-default">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-bg-elevated border border-border-default flex items-center justify-center border-gradient">
-            <div className="w-3.5 h-3.5 rounded-full bg-accent glow-accent-sm" />
-          </div>
-          <div>
-            <h1 className="text-sm font-bold text-text-primary tracking-wide">AXCIS AI</h1>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-success/10 text-success border border-success/20">
-                <span className="w-1 h-1 rounded-full bg-success" />
-                Online
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* New Chat */}
-      <div className="px-3 pt-3">
-        <button
-          onClick={onNewChat}
-          className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-accent/8 border border-accent/15 text-accent text-sm font-medium hover:bg-accent/15 transition-all cursor-pointer group"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="transition-transform group-hover:rotate-90 duration-200">
-            <path d="M8 3V13M3 8H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          New Chat
+    <aside className="w-[260px] h-dvh flex flex-col bg-bg-secondary border-r border-border-default">
+      <div className="px-4 pt-5 pb-3">
+        <button onClick={onNewChat} className="flex items-center gap-3 w-full">
+          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-white text-sm font-bold shrink-0">A</div>
+          <span className="text-sm font-semibold text-text-primary tracking-wide">AXCIS</span>
         </button>
       </div>
 
-      {/* Search */}
-      <div className="px-3 pt-3">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-bg-tertiary border border-border-default focus-within:border-accent/30 transition-all">
-          <svg className="w-3.5 h-3.5 text-text-tertiary shrink-0" viewBox="0 0 16 16" fill="none">
+      <div className="px-3 mb-2">
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-bg-tertiary border border-border-default text-xs text-text-tertiary">
+          <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 16 16" fill="none">
             <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.2" />
             <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
@@ -103,32 +68,19 @@ export default function Sidebar({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search conversations..."
-            className="flex-1 bg-transparent text-xs text-text-primary placeholder-text-tertiary outline-none"
+            className="flex-1 bg-transparent outline-none text-text-secondary placeholder-text-tertiary/60"
           />
           {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
-            >
+            <button onClick={() => setSearchQuery('')} className="text-text-tertiary hover:text-text-primary cursor-pointer">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                 <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </button>
           )}
         </div>
-        {searchQuery && filtered.length === 0 && (
-          <p className="text-[11px] text-text-tertiary mt-2 px-1">No conversations match "{searchQuery}"</p>
-        )}
       </div>
 
-      {/* Conversations */}
-      <div className="px-3 pt-3">
-        <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider px-1">
-          {searchQuery ? `Results (${filtered.length})` : 'History'}
-        </span>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-3 pt-2 pb-3">
+      <div className="flex-1 overflow-y-auto px-2 pb-2">
         <ConversationList
           conversations={filtered}
           activeId={activeConversationId}
@@ -139,20 +91,10 @@ export default function Sidebar({
         />
       </div>
 
-      {/* Bottom section - Theme + Status */}
-      <div className="border-t border-border-default p-3 space-y-2">
-        {/* Theme selector */}
-        <ThemeSelector currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
-
-        {/* Status bar */}
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse-glow" />
-            <span className="text-[11px] text-text-tertiary font-medium">
-              Connected
-            </span>
-          </div>
-        </div>
+      <div className="px-4 py-3 border-t border-border-default flex items-center gap-3 text-xs text-text-tertiary/60">
+        <a href="/settings" className="hover:text-text-secondary transition-colors">Settings</a>
+        <a href="/privacy" className="hover:text-text-secondary transition-colors">Privacy</a>
+        <a href="/terms" className="hover:text-text-secondary transition-colors">Terms</a>
       </div>
     </aside>
   );

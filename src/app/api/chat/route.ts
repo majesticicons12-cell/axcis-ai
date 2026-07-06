@@ -106,7 +106,6 @@ export async function POST(request: NextRequest) {
           }));
         }
 
-        // 5. Execute
         const fullResponse = await executeAgent(
           agentConfig,
           history.slice(0, -1),

@@ -32,7 +32,7 @@ export default function TaskList({ tasks, onUpdateStatus, onDelete }: TaskListPr
         return (
           <div
             key={task.id}
-            className="group px-3 py-2.5 rounded-lg border border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover transition-colors"
+            className="group px-3 py-2.5 rounded-lg border border-border-subtle bg-bg-tertiary/50 hover:bg-bg-hover"
           >
             <div className="flex items-start gap-2">
               <button
@@ -46,7 +46,7 @@ export default function TaskList({ tasks, onUpdateStatus, onDelete }: TaskListPr
                   task.status === 'completed'
                     ? 'bg-success border-success'
                     : `border-text-tertiary`
-                } transition-colors`}>
+                }`}>
                   {task.status === 'completed' && (
                     <svg viewBox="0 0 12 12" className="w-full h-full text-bg-primary">
                       <path d="M3 6L5.5 8.5L9 3.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -68,7 +68,7 @@ export default function TaskList({ tasks, onUpdateStatus, onDelete }: TaskListPr
               </div>
               <button
                 onClick={() => onDelete(task.id)}
-                className="hidden group-hover:block shrink-0 p-0.5 rounded text-text-tertiary hover:text-danger transition-colors cursor-pointer"
+                className="hidden group-hover:block shrink-0 p-0.5 rounded text-text-tertiary hover:text-danger cursor-pointer"
               >
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                   <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

@@ -21,6 +21,6 @@ Style:
 - Use markdown formatting for readability
 - Address the user directly and professionally`,
   tools: [],
-  model: 'claude-sonnet-4-20250514',
+  model: 'google/gemma-4-12B-it',
   maxTokens: 4096,
 };

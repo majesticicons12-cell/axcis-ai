@@ -87,6 +87,6 @@ When the user describes what they want, generate the full website and save it im
       },
     },
   ],
-  model: 'claude-sonnet-4-20250514',
+  model: 'google/gemma-4-12B-it',
   maxTokens: 8192,
 };
