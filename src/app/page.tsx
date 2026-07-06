@@ -3,25 +3,15 @@
 import { useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useUser, SignInButton } from '@clerk/nextjs';
-import { Ferrofluid, ClickSpark } from '@/components/animations';
+import Ferrofluid from '@/components/animations/Ferrofluid';
 import GradualBlur from '@/components/animations/GradualBlur';
 import MagicRings from '@/components/animations/MagicRings';
 
 const PUBLISHABLE_KEY = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 const HAS_CLERK = PUBLISHABLE_KEY && PUBLISHABLE_KEY !== 'your-clerk-publishable-key';
 
-function useReducedMotion() {
-  const reduced = useRef(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    reduced.current = mq.matches;
-  }, []);
-  return reduced;
-}
-
 export default function LandingPage() {
   const { isSignedIn, isLoaded } = HAS_CLERK ? useUser() : { isSignedIn: false, isLoaded: true };
-  const reducedMotion = useReducedMotion();
   const obsRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
@@ -79,12 +69,6 @@ export default function LandingPage() {
     );
   }, [isLoaded, isSignedIn]);
 
-  const handleCtaClick = useCallback(() => {
-    if (!reducedMotion.current && isSignedIn) {
-      window.location.href = '/chat';
-    }
-  }, [reducedMotion, isSignedIn]);
-
   return (
     <div className="min-h-dvh bg-bg-primary text-text-primary overflow-x-hidden font-sans">
       {/* Ferrofluid — full hero background */}
@@ -134,14 +118,11 @@ export default function LandingPage() {
           <a href="#how-it-works" className="text-[11px] font-medium text-text-tertiary hover:text-text-primary no-underline transition-colors">How it works</a>
           <a href="#why" className="text-[11px] font-medium text-text-tertiary hover:text-text-primary no-underline transition-colors">Why Axcis</a>
         </nav>
-        <ClickSpark sparkColor="#8b5cf6" sparkSize={5} sparkRadius={14} sparkCount={6} duration={350}>
           <CtaButton label="Get started" />
-        </ClickSpark>
       </header>
 
       <main className="relative z-10 pt-14">
         {/* Hero */}
-        <ClickSpark sparkColor="#8b5cf6" sparkSize={5} sparkRadius={16} sparkCount={8} duration={400}>
           <section className="min-h-[calc(100vh-3.5rem)] flex items-center">
             <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-16 lg:py-24">
               <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-center">
@@ -158,9 +139,7 @@ export default function LandingPage() {
                     Axcis researches markets, validates ideas, analyzes competitors, and builds strategy.
                     Not a chatbot. A reasoning engine with live tool access.
                   </p>
-                  <ClickSpark sparkColor="#8b5cf6" sparkSize={5} sparkRadius={18} sparkCount={10} duration={400}>
                     <CtaButton label="Get started" large />
-                  </ClickSpark>
                 </div>
 
                 <div className="lg:col-span-2 relative">
@@ -196,7 +175,6 @@ export default function LandingPage() {
               </div>
             </div>
           </section>
-        </ClickSpark>
 
         {/* How it works — editorial alternating layout */}
         <section className="py-24 lg:py-28" id="how-it-works">
@@ -302,9 +280,7 @@ export default function LandingPage() {
               <p className="text-sm text-text-secondary leading-relaxed mb-8 max-w-sm mx-auto">
                 No cost. No upsells. No usage limits. Just an AI co-founder that ships.
               </p>
-              <ClickSpark sparkColor="#8b5cf6" sparkSize={5} sparkRadius={18} sparkCount={10} duration={400}>
                 <CtaButton label="Get started" large />
-              </ClickSpark>
             </div>
           </div>
         </section>
