@@ -111,8 +111,8 @@ export default function LandingPage() {
         <div className="flex items-center gap-2">
           <div className="relative w-6 h-6 flex items-center justify-center">
             <MagicRings
-              color="#8b5cf6"
-              colorTwo="#a78bfa"
+              color="#C5F25C"
+              colorTwo="#D4F564"
               ringCount={4}
               speed={0.4}
               baseRadius={0.2}
@@ -146,6 +146,7 @@ export default function LandingPage() {
               <div className="lg:col-span-3 relative z-10">
                 <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-accent/15 bg-accent/[0.04] text-accent text-[10px] tracking-[2px] font-semibold uppercase mb-6">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                  <span className="bond-line" />
                   LIVE — AI CO-FOUNDER
                 </div>
                 <h1 className="font-heading text-[clamp(32px,5vw,60px)] font-black leading-[1.05] tracking-[2px] uppercase mb-5">
@@ -170,8 +171,8 @@ export default function LandingPage() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="relative w-28 h-28 flex items-center justify-center">
                       <MagicRings
-                        color="#8b5cf6"
-                        colorTwo="#a78bfa"
+                        color="#C5F25C"
+                        colorTwo="#D4F564"
                         ringCount={6}
                         speed={0.6}
                         baseRadius={0.22}
@@ -184,7 +185,7 @@ export default function LandingPage() {
                         mouseInfluence={0.25}
                         hoverScale={1.3}
                       />
-                      <div className="relative z-10 w-14 h-14 rounded-xl bg-accent/90 flex items-center justify-center text-white text-lg font-bold">A</div>
+                      <div className="relative z-10 w-14 h-14 bg-accent/90 flex items-center justify-center text-white text-lg font-bold mark-diamond">A</div>
                     </div>
                   </div>
                 </div>
@@ -238,7 +239,7 @@ export default function LandingPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {FEATURES.map((f, i) => (
                 <div key={i} className={`animate-in stagger-${Math.min(i % 6 + 1, 4)} p-6 rounded-xl border border-border-default bg-bg-secondary/40 hover:border-accent/20 hover:bg-bg-secondary/60 transition-all`}>
-                  <div className="text-[9px] tracking-[2px] uppercase text-text-tertiary font-semibold mb-2">{f.category}</div>
+                  <div className="text-[9px] uppercase text-text-tertiary font-semibold mb-2" style={{ letterSpacing: i % 3 === 0 ? '2px' : i % 3 === 1 ? '1px' : '0.5px' }}>{f.category}</div>
                   <h3 className="font-heading text-base font-bold mb-2">{f.title}</h3>
                   <p className="text-xs text-text-secondary leading-relaxed mb-4">{f.desc}</p>
                   <div className="flex flex-wrap gap-1.5 mt-auto">
@@ -248,9 +249,12 @@ export default function LandingPage() {
                   </div>
                   <Link
                     href="/chat"
-                    className="inline-flex items-center gap-1 mt-4 text-[10px] tracking-[1px] uppercase text-accent font-semibold no-underline hover:gap-2 transition-all"
+                    className={`inline-flex items-center gap-1 mt-4 text-[10px] tracking-[1px] text-accent font-semibold no-underline hover:gap-2 transition-all ${i % 2 === 0 ? 'uppercase' : 'normal-case'}`}
                   >
-                    Try This →
+                    Try This
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 8h10M9 4l4 4-4 4" />
+                    </svg>
                   </Link>
                 </div>
               ))}
@@ -262,7 +266,7 @@ export default function LandingPage() {
         <section className="py-24 lg:py-28 border-t border-border-default" id="how-it-works">
           <div className="max-w-6xl mx-auto px-5 lg:px-8">
             <div className="animate-in max-w-xl mb-16">
-              <div className="text-[10px] tracking-[3px] uppercase text-accent font-semibold mb-3">How It Works</div>
+              <div className="text-[11px] tracking-[0.5px] text-accent font-bold mb-3">Process</div>
               <h2 className="font-heading text-[clamp(28px,3.5vw,42px)] font-bold leading-tight tracking-[-0.3px] mb-4">
                 From Discovery to Launch
               </h2>
@@ -290,7 +294,7 @@ export default function LandingPage() {
         <section className="py-24 lg:py-28 border-t border-border-default" id="about">
           <div className="max-w-6xl mx-auto px-5 lg:px-8">
             <div className="animate-in mb-10">
-              <div className="text-[10px] tracking-[3px] uppercase text-accent font-semibold mb-3">About</div>
+              <div className="text-[9px] tracking-[1px] lowercase text-accent font-medium mb-3">about.</div>
               <h2 className="font-heading text-[clamp(28px,3.5vw,42px)] font-bold leading-tight tracking-[-0.3px]">About AXCIS</h2>
             </div>
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
@@ -343,7 +347,7 @@ export default function LandingPage() {
         <footer className="border-t border-border-default py-6 px-5 lg:px-8">
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-accent">A</span>
+              <span className="inline-flex items-center justify-center w-4 h-4 text-[8px] font-bold text-white bg-accent mark-diamond">A</span>
               <span className="text-[11px] font-semibold tracking-[2px] text-text-tertiary uppercase">Axcis</span>
             </div>
             <div className="text-[11px] text-text-tertiary">&copy; 2026 AXCIS. All rights reserved.</div>
@@ -360,6 +364,15 @@ export default function LandingPage() {
       </main>
 
       <style>{`
+        .bond-line {
+          width: 48px; height: 1px;
+          background: linear-gradient(90deg, transparent, var(--color-accent, #C5F25C), transparent);
+          animation: bondPulse 3s ease-in-out infinite;
+        }
+        @keyframes bondPulse {
+          0%, 100% { opacity: 0.2; transform: scaleX(0.6); }
+          50% { opacity: 0.8; transform: scaleX(1); }
+        }
         .animate-in {
           opacity: 0;
           transform: translateY(30px);
