@@ -206,8 +206,15 @@ export function useChat(): UseChatReturn {
         setMessages(prev => prev.filter(m => m.id !== assistantMsgId || m.content));
         return;
       }
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred';
-      setError(message);
+      const rawMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      const friendly = rawMessage.includes('fetch failed') || rawMessage.includes('Failed to fetch')
+        ? 'Couldn\'t reach the model — check your connection and try again.'
+        : rawMessage.includes('timeout') || rawMessage.includes('timed out')
+        ? 'The request timed out. Please try again.'
+        : rawMessage.includes('401') || rawMessage.includes('Unauthorized')
+        ? 'Authentication error — check your API key.'
+        : rawMessage;
+      setError(friendly);
       setMessages(prev => prev.filter(m => m.id !== assistantMsgId || m.content));
     } finally {
       setIsStreaming(false);

@@ -59,13 +59,18 @@ export default function ChatInput({ onSend, onStop, isStreaming, disabled, place
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: base64, media_type: mimeType, prompt: 'Describe this image in detail.' }),
       });
-      if (!response.ok) return `[Error: ${(await response.json()).error}]`;
+      if (!response.ok) {
+        const errMsg = (await response.json().catch(() => ({}))).error || 'Image analysis failed';
+        setAttachments(prev => prev.map(a => a.id === attachment.id ? { ...a, processing: false } : a));
+        return '';
+      }
       const data = await response.json();
-      const description = data.description || 'No description available.';
+      const description = data.description || '';
       setAttachments(prev => prev.map(a => a.id === attachment.id ? { ...a, processedText: description, processing: false } : a));
       return description;
-    } catch (err) {
-      return `[Error: ${err instanceof Error ? err.message : 'Unknown'}]`;
+    } catch {
+      setAttachments(prev => prev.map(a => a.id === attachment.id ? { ...a, processing: false } : a));
+      return '';
     }
   }, []);
 

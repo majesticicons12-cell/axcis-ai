@@ -152,8 +152,9 @@ async function runModels(
       }
     } catch (err) {
       const reason = err instanceof Error ? err.message : 'Unknown error';
-      console.error(`Groq ${model} failed:`, reason);
-      emitEvent('provider_fallback', { from: `groq/${model}`, reason });
+      const detail = err instanceof Error && err.cause ? String(err.cause) : '';
+      console.error(`Groq ${model} failed:`, reason, detail);
+      emitEvent('provider_fallback', { from: `groq/${model}`, reason, detail });
     }
   }
   return null;
