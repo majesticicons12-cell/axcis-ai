@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: 'AXCIS — AI Co-Founder',
   description: 'Your AI Co-Founder. Research markets, validate ideas, build strategy.',
   icons: {
-    icon: '/images/axcis-core.png',
-    apple: '/images/axcis-core.png',
+    icon: '/logo/axcis-logo.png',
+    apple: '/logo/axcis-logo.png',
   },
 };
 

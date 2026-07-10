@@ -147,7 +147,7 @@ export default function ChatPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="w-full max-w-md mx-4 bg-bg-secondary border border-border-default rounded-xl p-6 shadow-2xl">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 bg-accent flex items-center justify-center text-white text-sm font-bold mark-diamond">A</div>
+              <img src="/logo/axcis-logo.png" alt="AXCIS" className="w-9 h-9 object-cover" />
               <div>
                 <h2 className="text-sm font-semibold text-text-primary">Welcome to AXCIS</h2>
                 <p className="text-xs text-text-tertiary">Tell me about your startup</p>

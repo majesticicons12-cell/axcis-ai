@@ -7,7 +7,7 @@ const HAS_CLERK = PUBLISHABLE_KEY && PUBLISHABLE_KEY !== 'your-clerk-publishable
 
 const appearance = {
   variables: {
-    colorPrimary: '#C5F25C',
+    colorPrimary: '#a8e600',
     colorBackground: '#0a0a0a',
     colorText: '#f5f5f5',
     colorTextSecondary: '#a1a1aa',

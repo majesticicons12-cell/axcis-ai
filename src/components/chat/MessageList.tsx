@@ -30,8 +30,8 @@ export default function MessageList({ messages, isStreaming, activeAgent, curren
     return (
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="text-center max-w-md">
-          <div className="w-12 h-12 bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-5 mark-diamond">
-            <span className="text-accent text-lg font-bold">A</span>
+          <div className="w-12 h-12 flex items-center justify-center mx-auto mb-5">
+            <img src="/logo/axcis-logo.png" alt="AXCIS" className="w-12 h-12 object-cover" />
           </div>
           <h1 className="text-lg font-semibold text-text-primary mb-2">What are you building?</h1>
           <p className="text-sm text-text-secondary leading-relaxed mb-6">

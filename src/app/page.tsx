@@ -111,8 +111,8 @@ export default function LandingPage() {
         <div className="flex items-center gap-2">
           <div className="relative w-6 h-6 flex items-center justify-center">
             <MagicRings
-              color="#C5F25C"
-              colorTwo="#D4F564"
+              color="#a8e600"
+              colorTwo="#c4f000"
               ringCount={4}
               speed={0.4}
               baseRadius={0.2}
@@ -125,7 +125,7 @@ export default function LandingPage() {
               followMouse={false}
               hoverScale={1.1}
             />
-            <span className="relative z-10 text-[10px] font-bold text-accent">A</span>
+            <img src="/logo/axcis-logo.png" alt="AXCIS" className="relative z-10 w-full h-full object-cover" />
           </div>
           <span className="text-xs font-semibold tracking-[3px] text-text-primary uppercase">Axcis</span>
         </div>
@@ -181,11 +181,11 @@ export default function LandingPage() {
                         opacity={0.7}
                         blur={5}
                         noiseAmount={0.1}
-                        followMouse={true}
-                        mouseInfluence={0.25}
-                        hoverScale={1.3}
+                        followMouse={false}
+                        mouseInfluence={0}
+                        hoverScale={1}
                       />
-                      <div className="relative z-10 w-14 h-14 bg-accent/90 flex items-center justify-center text-white text-lg font-bold mark-diamond">A</div>
+                      <img src="/logo/axcis-logo.png" alt="AXCIS" className="relative z-10 w-14 h-14 object-contain" />
                     </div>
                   </div>
                 </div>
@@ -347,7 +347,7 @@ export default function LandingPage() {
         <footer className="border-t border-border-default py-6 px-5 lg:px-8">
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center justify-center w-4 h-4 text-[8px] font-bold text-white bg-accent mark-diamond">A</span>
+              <img src="/logo/axcis-logo.png" alt="AXCIS" className="w-4 h-4 object-cover" />
               <span className="text-[11px] font-semibold tracking-[2px] text-text-tertiary uppercase">Axcis</span>
             </div>
             <div className="text-[11px] text-text-tertiary">&copy; 2026 AXCIS. All rights reserved.</div>

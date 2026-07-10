@@ -47,12 +47,12 @@ void main() {
   // Nebula glow 1 — lime-green
   vec2 n1Center = vec2(sin(uTime * 0.015) * 0.4, cos(uTime * 0.012) * 0.3);
   float n1 = nebula(pos, n1Center, 1.2, 2.5);
-  col += vec3(0.30, 0.55, 0.10) * n1 * 0.4;
+  col += vec3(0.25, 0.55, 0.0) * n1 * 0.4;
 
   // Nebula glow 2 — lighter lime-green
   vec2 n2Center = vec2(cos(uTime * 0.018 + 1.5) * 0.5, sin(uTime * 0.014 + 0.8) * 0.35);
   float n2 = nebula(pos, n2Center, 0.9, 2.0);
-  col += vec3(0.50, 0.80, 0.22) * n2 * 0.3;
+  col += vec3(0.45, 0.78, 0.0) * n2 * 0.3;
 
   // Particles
   float particleSize = (0.003 + 0.005 * aspect);
@@ -78,8 +78,8 @@ void main() {
 
     float st = star(pos, p, s * (1.0 + twinkle * 0.3));
     vec3 starCol = mix(
-      vec3(0.55, 0.85, 0.25),
-      vec3(0.88, 1.0, 0.55),
+      vec3(0.50, 0.82, 0.05),
+      vec3(0.85, 1.0, 0.40),
       hash(vec2(seed, 7.0))
     );
     col += starCol * st * brightness * (0.5 + twinkle * 0.5);
@@ -87,7 +87,7 @@ void main() {
   }
 
   // Subtle ambient
-  col += vec3(0.01, 0.04, 0.01);
+  col += vec3(0.01, 0.04, 0.0);
 
   // Reduce brightness where particles are sparse
   col *= 0.8 + intensity * 0.5;

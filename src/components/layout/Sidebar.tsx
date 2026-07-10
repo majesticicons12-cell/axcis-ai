@@ -52,7 +52,7 @@ export default function Sidebar({
     <aside className="w-[260px] h-dvh flex flex-col bg-bg-secondary border-r border-border-default">
       <div className="px-4 pt-5 pb-3">
         <button onClick={onNewChat} className="flex items-center gap-3 w-full">
-          <div className="w-8 h-8 bg-accent flex items-center justify-center text-white text-sm font-bold shrink-0 mark-diamond">A</div>
+          <img src="/logo/axcis-logo.png" alt="AXCIS" className="w-8 h-8 object-cover shrink-0" />
           <span className="text-sm font-semibold text-text-primary tracking-wide">AXCIS</span>
         </button>
       </div>
