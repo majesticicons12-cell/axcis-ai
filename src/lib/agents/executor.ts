@@ -151,11 +151,12 @@ async function runModels(
         if (content) return { text: content, model };
       }
     } catch (err) {
-      const reason = err instanceof Error ? err.message : 'Unknown error';
-      const detail = err instanceof Error && err.cause ? String(err.cause) : '';
-      console.error(`Groq ${model} failed:`, reason, detail);
-      emitEvent('provider_fallback', { from: `groq/${model}`, reason, detail });
-    }
+    const reason = err instanceof Error ? err.message : 'Unknown error';
+    const detail = err instanceof Error && err.cause ? String(err.cause) : '';
+    const status = err instanceof Error && 'status' in err ? (err as any).status : undefined;
+    console.error(`Groq ${model} failed:`, { reason, detail, status, model });
+    emitEvent('provider_fallback', { from: `groq/${model}`, reason, detail, status });
+  }
   }
   return null;
 }
@@ -169,7 +170,10 @@ export async function executeAgent(
 ): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey || apiKey.startsWith('your-')) {
-    throw new Error('GROQ_API_KEY not configured');
+    const msg = 'GROQ_API_KEY not configured — add it to Vercel Environment Variables';
+    console.error(msg);
+    emitEvent('error', { message: msg });
+    throw new Error(msg);
   }
 
   const { default: Groq } = await import('groq-sdk');
@@ -222,12 +226,20 @@ export async function executeAgent(
           return result.text;
         }
       } catch (hfErr) {
-        console.error(`HF ${model} failed:`, hfErr instanceof Error ? hfErr.message : 'Unknown error');
+        const reason = hfErr instanceof Error ? hfErr.message : 'Unknown error';
+        const detail = hfErr instanceof Error && hfErr.cause ? String(hfErr.cause) : '';
+        const status = hfErr instanceof Error && 'status' in hfErr ? (hfErr as any).status : undefined;
+        console.error(`HF ${model} failed:`, { reason, detail, status, model });
+        emitEvent('provider_fallback', { from: `hf/${model}`, reason, detail, status });
       }
     }
   } catch (hfErr) {
-    console.error('HF fallback failed entirely:', hfErr);
+    const reason = hfErr instanceof Error ? hfErr.message : 'Unknown error';
+    const detail = hfErr instanceof Error && hfErr.cause ? String(hfErr.cause) : '';
+    const status = hfErr instanceof Error && 'status' in hfErr ? (hfErr as any).status : undefined;
+    console.error('HF fallback failed entirely:', { reason, detail, status });
+    emitEvent('provider_fallback', { from: 'huggingface', reason, detail, status });
   }
 
-  throw new Error('All models failed to generate a response');
+  throw new Error('All models failed — check Vercel logs for GROQ_API_KEY / HF_API_KEY');
 }
